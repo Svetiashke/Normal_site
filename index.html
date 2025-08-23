@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malware Simulation</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: 'Courier New', monospace;
+    cursor: none;
+  }
+
+  /* фон відео */
+  #bgVideo {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    object-fit: cover;
+    z-index: -1;
+    filter: contrast(200%) brightness(150%);
+  }
+
+  /* хаотичні тексти */
+  .textChaos {
+    position: absolute;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+    animation: flicker 0.1s infinite alternate;
+  }
+  @keyframes flicker {
+    0% { opacity: 0.2; }
+    50% { opacity: 1; }
+    100% { opacity: 0.2; }
+  }
+
+  /* скрімер */
+  #screamer {
+    display: none;
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background:black; z-index:9999;
+    justify-content:center; align-items:center;
+  }
+  #screamer img {
+    width:100%; height:100%; object-fit:cover;
+  }
+</style>
+</head>
+<body>
+
+<video id="bgVideo" autoplay muted loop>
+  <source src="background.mp4" type="video/mp4">
+</video>
+
+<div id="screamer">
+  <img src="screamer.jpg" alt="Screamer">
+  <audio id="screamAudio" src="scream.mp3"></audio>
+</div>
+
+<script>
+// --------- Наплив текстів хаотично ----------
+const messages = ["Lost?", "Frightened?", "Confused?", "Good.", "Error 0xDEAD", "System Malfunction", "You Cannot Leave", "HELP"];
+function spawnText() {
+  const span = document.createElement("div");
+  span.className = "textChaos";
+  span.textContent = messages[Math.floor(Math.random()*messages.length)];
+  span.style.left = Math.random()*window.innerWidth + "px";
+  span.style.top = Math.random()*window.innerHeight + "px";
+  span.style.fontSize = (12 + Math.random()*60) + "px";
+  span.style.color = `rgb(${Math.random()*255},0,${Math.random()*255})`;
+  document.body.appendChild(span);
+  setTimeout(()=>span.remove(), 6000); 
+}
+setInterval(spawnText, 150); // хаос швидко
+
+// --------- Глітч відео ----------
+setInterval(()=>{
+  const v = document.getElementById("bgVideo");
+  v.style.filter = `contrast(${150+Math.random()*150}%) brightness(${50+Math.random()*150}%)`;
+}, 200);
+
+// --------- Скрімери та звук ----------
+const screamerTimes = [8000, 15000, 23000]; // мс
+screamerTimes.forEach(t=>{
+  setTimeout(()=>{
+    const scr = document.getElementById("screamer");
+    scr.style.display = "flex";
+    document.getElementById("screamAudio").play();
+    setTimeout(()=>scr.style.display="none",3000); // зникає через 3 сек
+  }, t);
+});
+
+// --------- Блокування закриття сайту ----------
+window.onbeforeunload = () => "You cannot leave!";
+
+// --------- Курсор хаотично ----------
+document.body.addEventListener("mousemove", e=>{
+  let ghost = document.getElementById("ghostCursor") || (()=>{
+    const div = document.createElement("div");
+    div.id="ghostCursor";
+    div.style.position="absolute";
+    div.style.width="25px";
+    div.style.height="25px";
+    div.style.borderRadius="50%";
+    div.style.background="red";
+    div.style.pointerEvents="none";
+    document.body.appendChild(div);
+    return div;
+  })();
+  ghost.style.left = (e.pageX + (Math.random()*120-60))+"px";
+  ghost.style.top = (e.pageY + (Math.random()*120-60))+"px";
+});
+
+// --------- Мобільна підтримка (тач) ----------
+document.body.addEventListener("touchmove", e=>{
+  e.preventDefault();
+  let ghost = document.getElementById("ghostCursor") || (()=>{
+    const div = document.createElement("div");
+    div.id="ghostCursor";
+    div.style.position="absolute";
+    div.style.width="25px";
+    div.style.height="25px";
+    div.style.borderRadius="50%";
+    div.style.background="red";
+    div.style.pointerEvents="none";
+    document.body.appendChild(div);
+    return div;
+  })();
+  const touch = e.touches[0];
+  ghost.style.left = (touch.pageX + (Math.random()*120-60))+"px";
+  ghost.style.top = (touch.pageY + (Math.random()*120-60))+"px";
+}, {passive:false});
+
+</script>
+
+</body>
+</html>
