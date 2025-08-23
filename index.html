@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Normal Page</title>
+<title>Scary Demo</title>
 <style>
 html, body {
   margin: 0;
@@ -12,17 +12,20 @@ html, body {
   height: 100%;
   font-family: Arial, sans-serif;
   overflow: hidden;
-  transition: background 1s, color 1s;
   background: #eee;
   color: #000;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  transition: background 1s, color 1s;
 }
 
 h1, p {
   transition: all 0.5s;
+  text-align: center;
+  padding: 0 10px;
+  word-break: break-word;
 }
 
 .hidden {
@@ -35,6 +38,7 @@ h1, p {
   user-select: none;
   pointer-events: none;
   animation: flicker 0.1s infinite alternate;
+  white-space: nowrap;
 }
 
 @keyframes flicker {
@@ -52,7 +56,23 @@ h1, p {
   justify-content:center; align-items:center;
 }
 #screamer img {
-  width:100%; height:100%; object-fit:cover;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+#clientData {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: lime;
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+  font-size: 1rem;
+  max-width: 90%;
+  word-wrap: break-word;
+  border-radius: 5px;
 }
 </style>
 </head>
@@ -61,7 +81,6 @@ h1, p {
 <h1>Welcome to the Demo Page</h1>
 <p>Enjoy the content... for now.</p>
 
-<!-- Скрімер і аудіо -->
 <div id="screamer">
   <img src="screamer.jpg" alt="Screamer">
   <audio id="screamAudio" src="scream.mp3"></audio>
@@ -72,12 +91,11 @@ h1, p {
 <div id="clientData" class="hidden"></div>
 
 <script>
-// ----------- Початковий вигляд ----------
 const bgMusic = document.getElementById("bgMusic");
 bgMusic.volume = 0.3;
-bgMusic.play().catch(()=>{}); // автовідтворення може не працювати на мобільних до взаємодії
+bgMusic.play().catch(()=>{}); // автовідтворення може не спрацювати без взаємодії
 
-// ----------- Перехід у страшний режим ------------
+// --------- Перехід у страшний режим ------------
 setTimeout(() => {
   document.body.style.background = "black";
   document.body.style.color = "red";
@@ -92,7 +110,7 @@ setTimeout(() => {
     span.textContent = messages[Math.floor(Math.random()*messages.length)];
     span.style.left = Math.random()*window.innerWidth + "px";
     span.style.top = Math.random()*window.innerHeight + "px";
-    span.style.fontSize = (14 + Math.random()*60) + "px";
+    span.style.fontSize = Math.max(14, window.innerWidth/30 + Math.random()*30) + "px";
     span.style.color = `rgb(${Math.random()*255},0,${Math.random()*255})`;
     document.body.appendChild(span);
     setTimeout(()=>span.remove(), 6000);
@@ -107,32 +125,35 @@ setTimeout(() => {
     setTimeout(()=>scr.style.display="none",3000);
   },5000);
 
-  // хаотичний курсор
-  document.body.addEventListener("mousemove", e=>{
+  // курсор хаотично
+  function moveGhost(x, y){
     let ghost = document.getElementById("ghostCursor") || (()=>{
       const div = document.createElement("div");
       div.id="ghostCursor";
       div.style.position="absolute";
-      div.style.width="25px"; div.style.height="25px";
+      div.style.width="5vw"; div.style.height="5vw";
       div.style.borderRadius="50%"; div.style.background="red";
       div.style.pointerEvents="none";
+      div.style.maxWidth="50px";
+      div.style.maxHeight="50px";
       document.body.appendChild(div);
       return div;
     })();
-    ghost.style.left = (e.pageX + (Math.random()*120-60))+"px";
-    ghost.style.top = (e.pageY + (Math.random()*120-60))+"px";
-  });
+    ghost.style.left = (x + (Math.random()*50-25))+"px";
+    ghost.style.top = (y + (Math.random()*50-25))+"px";
+  }
 
-  // --------- Виведення даних браузера в кінці ----------
+  document.body.addEventListener("mousemove", e => moveGhost(e.pageX, e.pageY));
+  document.body.addEventListener("touchmove", e => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    moveGhost(touch.pageX, touch.pageY);
+  }, {passive:false});
+
+  // --------- Виведення даних браузера ----------
   setTimeout(()=>{
     const dataDiv = document.getElementById("clientData");
     dataDiv.classList.remove("hidden");
-    dataDiv.style.position="absolute";
-    dataDiv.style.top="10px"; dataDiv.style.left="10px";
-    dataDiv.style.color="lime";
-    dataDiv.style.background="rgba(0,0,0,0.7)";
-    dataDiv.style.padding="10px";
-    dataDiv.style.fontSize="1rem";
     const ua = navigator.userAgent;
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -151,113 +172,5 @@ setTimeout(() => {
 window.onbeforeunload = () => "You cannot leave!";
 
 </script>
-
 </body>
-</html>  @keyframes flicker {
-    0% { opacity: 0.2; }
-    50% { opacity: 1; }
-    100% { opacity: 0.2; }
-  }
-
-  /* скрімер */
-  #screamer {
-    display: none;
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
-    background:black; z-index:9999;
-    justify-content:center; align-items:center;
-  }
-  #screamer img {
-    width:100%; height:100%; object-fit:cover;
-  }
-</style>
-</head>
-<body>
-
-<video id="bgVideo" autoplay muted loop>
-  <source src="background.mp4" type="video/mp4">
-</video>
-
-<div id="screamer">
-  <img src="screamer.jpg" alt="Screamer">
-  <audio id="screamAudio" src="scream.mp3"></audio>
-</div>
-
-<script>
-// --------- Наплив текстів хаотично ----------
-const messages = ["Lost?", "Frightened?", "Confused?", "Good.", "Error 0xDEAD", "System Malfunction", "You Cannot Leave", "HELP"];
-function spawnText() {
-  const span = document.createElement("div");
-  span.className = "textChaos";
-  span.textContent = messages[Math.floor(Math.random()*messages.length)];
-  span.style.left = Math.random()*window.innerWidth + "px";
-  span.style.top = Math.random()*window.innerHeight + "px";
-  span.style.fontSize = (12 + Math.random()*60) + "px";
-  span.style.color = `rgb(${Math.random()*255},0,${Math.random()*255})`;
-  document.body.appendChild(span);
-  setTimeout(()=>span.remove(), 6000); 
-}
-setInterval(spawnText, 150); // хаос швидко
-
-// --------- Глітч відео ----------
-setInterval(()=>{
-  const v = document.getElementById("bgVideo");
-  v.style.filter = `contrast(${150+Math.random()*150}%) brightness(${50+Math.random()*150}%)`;
-}, 200);
-
-// --------- Скрімери та звук ----------
-const screamerTimes = [8000, 15000, 23000]; // мс
-screamerTimes.forEach(t=>{
-  setTimeout(()=>{
-    const scr = document.getElementById("screamer");
-    scr.style.display = "flex";
-    document.getElementById("screamAudio").play();
-    setTimeout(()=>scr.style.display="none",3000); // зникає через 3 сек
-  }, t);
-});
-
-// --------- Блокування закриття сайту ----------
-window.onbeforeunload = () => "You cannot leave!";
-
-// --------- Курсор хаотично ----------
-document.body.addEventListener("mousemove", e=>{
-  let ghost = document.getElementById("ghostCursor") || (()=>{
-    const div = document.createElement("div");
-    div.id="ghostCursor";
-    div.style.position="absolute";
-    div.style.width="25px";
-    div.style.height="25px";
-    div.style.borderRadius="50%";
-    div.style.background="red";
-    div.style.pointerEvents="none";
-    document.body.appendChild(div);
-    return div;
-  })();
-  ghost.style.left = (e.pageX + (Math.random()*120-60))+"px";
-  ghost.style.top = (e.pageY + (Math.random()*120-60))+"px";
-});
-
-// --------- Мобільна підтримка (тач) ----------
-document.body.addEventListener("touchmove", e=>{
-  e.preventDefault();
-  let ghost = document.getElementById("ghostCursor") || (()=>{
-    const div = document.createElement("div");
-    div.id="ghostCursor";
-    div.style.position="absolute";
-    div.style.width="25px";
-    div.style.height="25px";
-    div.style.borderRadius="50%";
-    div.style.background="red";
-    div.style.pointerEvents="none";
-    document.body.appendChild(div);
-    return div;
-  })();
-  const touch = e.touches[0];
-  ghost.style.left = (touch.pageX + (Math.random()*120-60))+"px";
-  ghost.style.top = (touch.pageY + (Math.random()*120-60))+"px";
-}, {passive:false});
-
-</script>
-
-</body>
-</html>
+  </html>
