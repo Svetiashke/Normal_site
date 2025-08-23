@@ -3,38 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Malware Simulation</title>
+<title>Normal Page</title>
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: black;
-    font-family: 'Courier New', monospace;
-    cursor: none;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  transition: background 1s, color 1s;
+  background: #eee;
+  color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
-  /* фон відео */
-  #bgVideo {
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    object-fit: cover;
-    z-index: -1;
-    filter: contrast(200%) brightness(150%);
-  }
+h1, p {
+  transition: all 0.5s;
+}
 
-  /* хаотичні тексти */
-  .textChaos {
-    position: absolute;
-    font-weight: bold;
-    user-select: none;
-    pointer-events: none;
-    animation: flicker 0.1s infinite alternate;
+.hidden {
+  display: none;
+}
+
+.textChaos {
+  position: absolute;
+  font-weight: bold;
+  user-select: none;
+  pointer-events: none;
+  animation: flicker 0.1s infinite alternate;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+#screamer {
+  display: none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:black; z-index:9999;
+  justify-content:center; align-items:center;
+}
+#screamer img {
+  width:100%; height:100%; object-fit:cover;
+}
+</style>
+</head>
+<body>
+
+<h1>Welcome to the Demo Page</h1>
+<p>Enjoy the content... for now.</p>
+
+<!-- Скрімер і аудіо -->
+<div id="screamer">
+  <img src="screamer.jpg" alt="Screamer">
+  <audio id="screamAudio" src="scream.mp3"></audio>
+</div>
+
+<audio id="bgMusic" src="creepy_music.mp3" loop></audio>
+
+<div id="clientData" class="hidden"></div>
+
+<script>
+// ----------- Початковий вигляд ----------
+const bgMusic = document.getElementById("bgMusic");
+bgMusic.volume = 0.3;
+bgMusic.play().catch(()=>{}); // автовідтворення може не працювати на мобільних до взаємодії
+
+// ----------- Перехід у страшний режим ------------
+setTimeout(() => {
+  document.body.style.background = "black";
+  document.body.style.color = "red";
+  document.querySelector("h1").textContent = "LOST?";
+  document.querySelector("p").textContent = "Everything is not what it seems...";
+  
+  // хаотичні тексти
+  const messages = ["Lost?", "Frightened?", "Confused?", "Good.", "System Malfunction", "Error 0xDEAD"];
+  function spawnText() {
+    const span = document.createElement("div");
+    span.className = "textChaos";
+    span.textContent = messages[Math.floor(Math.random()*messages.length)];
+    span.style.left = Math.random()*window.innerWidth + "px";
+    span.style.top = Math.random()*window.innerHeight + "px";
+    span.style.fontSize = (14 + Math.random()*60) + "px";
+    span.style.color = `rgb(${Math.random()*255},0,${Math.random()*255})`;
+    document.body.appendChild(span);
+    setTimeout(()=>span.remove(), 6000);
   }
-  @keyframes flicker {
+  setInterval(spawnText, 150);
+
+  // скрімер через 5 секунд страшного режиму
+  setTimeout(()=>{
+    const scr = document.getElementById("screamer");
+    scr.style.display = "flex";
+    document.getElementById("screamAudio").play();
+    setTimeout(()=>scr.style.display="none",3000);
+  },5000);
+
+  // хаотичний курсор
+  document.body.addEventListener("mousemove", e=>{
+    let ghost = document.getElementById("ghostCursor") || (()=>{
+      const div = document.createElement("div");
+      div.id="ghostCursor";
+      div.style.position="absolute";
+      div.style.width="25px"; div.style.height="25px";
+      div.style.borderRadius="50%"; div.style.background="red";
+      div.style.pointerEvents="none";
+      document.body.appendChild(div);
+      return div;
+    })();
+    ghost.style.left = (e.pageX + (Math.random()*120-60))+"px";
+    ghost.style.top = (e.pageY + (Math.random()*120-60))+"px";
+  });
+
+  // --------- Виведення даних браузера в кінці ----------
+  setTimeout(()=>{
+    const dataDiv = document.getElementById("clientData");
+    dataDiv.classList.remove("hidden");
+    dataDiv.style.position="absolute";
+    dataDiv.style.top="10px"; dataDiv.style.left="10px";
+    dataDiv.style.color="lime";
+    dataDiv.style.background="rgba(0,0,0,0.7)";
+    dataDiv.style.padding="10px";
+    dataDiv.style.fontSize="1rem";
+    const ua = navigator.userAgent;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const lang = navigator.language;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    dataDiv.innerHTML = `<h3>Client Info:</h3>
+      User-Agent: ${ua}<br>
+      Resolution: ${width}x${height}<br>
+      Language: ${lang}<br>
+      Timezone: ${tz}`;
+  },10000);
+
+},5000); // через 5 секунд після завантаження
+
+// --------- Блокування виходу ------------
+window.onbeforeunload = () => "You cannot leave!";
+
+</script>
+
+</body>
+</html>  @keyframes flicker {
     0% { opacity: 0.2; }
     50% { opacity: 1; }
     100% { opacity: 0.2; }
