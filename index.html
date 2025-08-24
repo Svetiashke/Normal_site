@@ -91,82 +91,98 @@ h1, p {
 <div id="clientData" class="hidden"></div>
 
 <script>
+// --- Глобальні змінні ---
 const bgMusic = document.getElementById("bgMusic");
 bgMusic.volume = 0.3;
-bgMusic.play().catch(()=>{}); // автовідтворення може не спрацювати без взаємодії
+const screamAudio = document.getElementById("screamAudio");
+let scaryTimeout = null;
+let musicStarted = false;
 
-// --------- Перехід у страшний режим ------------
-setTimeout(() => {
-  document.body.style.background = "black";
-  document.body.style.color = "red";
-  document.querySelector("h1").textContent = "LOST?";
-  document.querySelector("p").textContent = "Everything is not what it seems...";
+// --- Функція запуску музики та страшного режиму ---
+function startScaryDemo() {
+  if (musicStarted) return;
+  musicStarted = true;
+  bgMusic.play().catch(()=>{});
   
-  // хаотичні тексти
-  const messages = ["Lost?", "Frightened?", "Confused?", "Good.", "System Malfunction", "Error 0xDEAD"];
-  function spawnText() {
-    const span = document.createElement("div");
-    span.className = "textChaos";
-    span.textContent = messages[Math.floor(Math.random()*messages.length)];
-    span.style.left = Math.random()*window.innerWidth + "px";
-    span.style.top = Math.random()*window.innerHeight + "px";
-    span.style.fontSize = Math.max(14, window.innerWidth/30 + Math.random()*30) + "px";
-    span.style.color = `rgb(${Math.random()*255},0,${Math.random()*255})`;
-    document.body.appendChild(span);
-    setTimeout(()=>span.remove(), 6000);
-  }
-  setInterval(spawnText, 150);
+  // --------- Перехід у страшний режим ------------
+  scaryTimeout = setTimeout(() => {
+    document.body.style.background = "black";
+    document.body.style.color = "red";
+    document.querySelector("h1").textContent = "LOST?";
+    document.querySelector("p").textContent = "Everything is not what it seems...";
+    
+    // хаотичні тексти
+    const messages = ["Lost?", "Frightened?", "Confused?", "Good.", "System Malfunction", "Error 0xDEAD"];
+    function spawnText() {
+      const span = document.createElement("div");
+      span.className = "textChaos";
+      span.textContent = messages[Math.floor(Math.random()*messages.length)];
+      span.style.left = Math.random()*window.innerWidth + "px";
+      span.style.top = Math.random()*window.innerHeight + "px";
+      span.style.fontSize = Math.max(14, window.innerWidth/30 + Math.random()*30) + "px";
+      span.style.color = `rgb(${Math.random()*255},0,${Math.random()*255})`;
+      document.body.appendChild(span);
+      setTimeout(()=>span.remove(), 6000);
+    }
+    setInterval(spawnText, 150);
 
-  // скрімер через 5 секунд страшного режиму
-  setTimeout(()=>{
-    const scr = document.getElementById("screamer");
-    scr.style.display = "flex";
-    document.getElementById("screamAudio").play();
-    setTimeout(()=>scr.style.display="none",3000);
-  },5000);
+    // скрімер через 5 секунд страшного режиму
+    setTimeout(()=>{
+      const scr = document.getElementById("screamer");
+      scr.style.display = "flex";
+      screamAudio.currentTime = 0;
+      screamAudio.play().catch(()=>{});
+      setTimeout(()=>scr.style.display="none",3000);
+    },5000);
 
-  // курсор хаотично
-  function moveGhost(x, y){
-    let ghost = document.getElementById("ghostCursor") || (()=>{
-      const div = document.createElement("div");
-      div.id="ghostCursor";
-      div.style.position="absolute";
-      div.style.width="5vw"; div.style.height="5vw";
-      div.style.borderRadius="50%"; div.style.background="red";
-      div.style.pointerEvents="none";
-      div.style.maxWidth="50px";
-      div.style.maxHeight="50px";
-      document.body.appendChild(div);
-      return div;
-    })();
-    ghost.style.left = (x + (Math.random()*50-25))+"px";
-    ghost.style.top = (y + (Math.random()*50-25))+"px";
-  }
+    // курсор хаотично
+    function moveGhost(x, y){
+      let ghost = document.getElementById("ghostCursor") || (()=>{
+        const div = document.createElement("div");
+        div.id="ghostCursor";
+        div.style.position="absolute";
+        div.style.width="5vw"; div.style.height="5vw";
+        div.style.borderRadius="50%"; div.style.background="red";
+        div.style.pointerEvents="none";
+        div.style.maxWidth="50px";
+        div.style.maxHeight="50px";
+        document.body.appendChild(div);
+        return div;
+      })();
+      ghost.style.left = (x + (Math.random()*50-25))+"px";
+      ghost.style.top = (y + (Math.random()*50-25))+"px";
+    }
 
-  document.body.addEventListener("mousemove", e => moveGhost(e.pageX, e.pageY));
-  document.body.addEventListener("touchmove", e => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    moveGhost(touch.pageX, touch.pageY);
-  }, {passive:false});
+    document.body.addEventListener("mousemove", e => moveGhost(e.pageX, e.pageY));
+    document.body.addEventListener("touchmove", e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      moveGhost(touch.pageX, touch.pageY);
+    }, {passive:false});
 
-  // --------- Виведення даних браузера ----------
-  setTimeout(()=>{
-    const dataDiv = document.getElementById("clientData");
-    dataDiv.classList.remove("hidden");
-    const ua = navigator.userAgent;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const lang = navigator.language;
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    dataDiv.innerHTML = `<h3>Client Info:</h3>
-      User-Agent: ${ua}<br>
-      Resolution: ${width}x${height}<br>
-      Language: ${lang}<br>
-      Timezone: ${tz}`;
-  },10000);
+    // --------- Виведення даних браузера ----------
+    setTimeout(()=>{
+      const dataDiv = document.getElementById("clientData");
+      dataDiv.classList.remove("hidden");
+      const ua = navigator.userAgent;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const lang = navigator.language;
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      dataDiv.innerHTML = `<h3>Client Info:</h3>
+        User-Agent: ${ua}<br>
+        Resolution: ${width}x${height}<br>
+        Language: ${lang}<br>
+        Timezone: ${tz}`;
+    },10000);
 
-},5000); // через 5 секунд після завантаження
+  },5000); // через 5 секунд після взаємодії
+}
+
+// --------- Запуск лише після першої взаємодії користувача ------------
+["click", "keydown", "touchstart"].forEach(evt => {
+  window.addEventListener(evt, startScaryDemo, {once:true});
+});
 
 // --------- Блокування виходу ------------
 window.onbeforeunload = () => "You cannot leave!";
